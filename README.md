@@ -55,3 +55,27 @@ g++ -std=c++17 -I./include \
     ./src/acceptor.cpp \
     ./main.cpp \
     -o ./build/http_server -lws2_32
+
+浏览器访问 `http://localhost:8080`，看到 `Hello` 表示运行成功。
+
+## 示例
+
+项目提供多个示例验证不同场景：
+
+| 分支 | 功能 | 说明 |
+| :--- | :--- | :--- |
+| `main` | 基础 HTTP 服务 | 返回 Hello |
+| `test/json-api` | JSON API 服务 | 根据 URL 路径返回不同 JSON |
+| `test/html-page` | 静态 HTML 页面 | 返回完整网页 |
+| `test/iot-control` | IoT 设备控制 | 通过 URL 控制虚拟设备状态 |
+| `test/echo-server` | 回声服务器 | 原样返回收到的请求 |
+
+## 技术栈
+
+`C++17` `Socket API` `select` `多线程` `内存池` `条件变量` `HTTP` `CMake` `跨平台` `ARM Linux`
+
+## 平台支持
+
+- Windows (MinGW / MSYS2)
+- Linux (x86_64)
+- ARM Linux (树莓派、NanoPi，交叉编译或原生编译)
