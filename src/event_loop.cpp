@@ -14,6 +14,7 @@ static bool initWinsock()
 static bool winsockReady = initWinsock();
 #else
 #include <sys/select.h>
+#include <unistd.h> // Linux 下提供 usleep
 #endif
 
 EventLoop::EventLoop() : threadPool_(new ThreadPool(4)) {}
@@ -62,7 +63,11 @@ void EventLoop::run()
 
         if (maxfd == 0)
         {
+#ifdef _WIN32
             _sleep(100);
+#else
+            usleep(100000); // 100ms = 100000us
+#endif
             continue;
         }
 
@@ -77,7 +82,6 @@ void EventLoop::run()
                     continue;
                 if (FD_ISSET(conn->fd(), &readfds))
                 {
-                    // 读数据扔给线程池处理
                     auto c = conn;
                     threadPool_->submit([c]()
                                         { c->handleRead(); });
