@@ -1,4 +1,3 @@
-```markdown
 # lightweight_server
 
 ![C++](https://img.shields.io/badge/C%2B%2B-17-blue)
@@ -9,51 +8,33 @@
 
 轻量级 C++ 网络库，包含内存池、线程池、事件循环和 HTTP 服务模块。纯手写，零第三方网络库依赖，约 600 行代码。支持 Windows、Linux 和 ARM Linux 跨平台部署。
 
----
-
-## 📦 核心模块
+## 核心模块
 
 | 模块 | 文件 | 职责 |
 | :--- | :--- | :--- |
-| `FixedMemPool` | `include/mem_pool.h` | 固定大小内存分配器，基于空闲链表，O(1) 分配回收，无内存碎片 |
-| `ThreadPool` | `include/thread_pool.h` | 固定线程数任务线程池，条件变量驱动，支持阻塞等待与唤醒 |
-| `Buffer` | `include/buffer.h` | 自动扩容的读写缓冲区，支持 CRLF 行尾查找，用于 HTTP 协议解析 |
-| `TcpConnection` | `include/tcp_connection.h` | 管理单个 TCP 连接，回调驱动，读写缓冲分离 |
-| `EventLoop` | `include/event_loop.h` | 基于 select I/O 复用的事件循环，单线程管理多个并发连接 |
-| `Acceptor` | `include/acceptor.h` | 监听端口，接受新连接，通过回调通知上层 |
+| FixedMemPool | `include/mem_pool.h` | 固定大小内存分配器，基于空闲链表，O(1) 分配回收，无内存碎片 |
+| ThreadPool | `include/thread_pool.h` | 固定线程数的任务线程池，条件变量驱动，支持阻塞等待与唤醒 |
+| Buffer | `include/buffer.h` | 自动扩容的读写缓冲区，支持 CRLF 行尾查找，用于 HTTP 协议解析 |
+| TcpConnection | `include/tcp_connection.h` | 管理单个 TCP 连接，回调驱动，读写缓冲分离 |
+| EventLoop | `include/event_loop.h` | 基于 select I/O 复用的事件循环，单线程管理多个并发连接 |
+| Acceptor | `include/acceptor.h` | 监听端口，接受新连接，通过回调通知上层 |
 
----
-
-## 🧠 架构
+## 架构
 
 `main` 函数启动后，由 `Acceptor` 监听端口并接受新连接。每个新连接被封装为一个 `TcpConnection` 对象，注册到 `EventLoop` 中。
 
 `EventLoop` 基于 `select` 实现事件循环，监听所有连接的可读和可写事件：
-
 - 可读事件触发 `TcpConnection::handleRead()`，从 socket 接收数据写入 `Buffer`，当 `Buffer` 中检测到完整的 HTTP 请求行后，调用用户设置的回调函数进行处理。
 - 可写事件触发 `TcpConnection::handleWrite()`，将 `Buffer` 中待发送的数据通过 socket 发出。
 
 `EventLoop` 内部使用 `ThreadPool` 提交读写任务，由工作线程并发执行回调，避免阻塞主事件循环。
 
----
+## 快速开始
 
-## 🚀 快速开始
-
-### CMake（推荐）
+### 编译
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
-./http_server
-```
-
-### 手动 g++ 编译
-
-<details>
-<summary>🐧 Linux / ARM Linux</summary>
-
-```bash
+# Linux / ARM Linux
 g++ -std=c++17 -I./include \
     ./src/mem_pool.cpp \
     ./src/thread_pool.cpp \
@@ -63,13 +44,8 @@ g++ -std=c++17 -I./include \
     ./src/acceptor.cpp \
     ./main.cpp \
     -o ./build/http_server -pthread
-```
-</details>
 
-<details>
-<summary>🪟 Windows (MinGW / MSYS2)</summary>
-
-```bash
+# Windows (MinGW / MSYS2)
 g++ -std=c++17 -I./include \
     ./src/mem_pool.cpp \
     ./src/thread_pool.cpp \
@@ -79,34 +55,27 @@ g++ -std=c++17 -I./include \
     ./src/acceptor.cpp \
     ./main.cpp \
     -o ./build/http_server -lws2_32
-```
-</details>
 
-启动后浏览器访问 `http://localhost:8080`，看到 `Hello` 表示运行成功。
+浏览器访问 `http://localhost:8080`，看到 `Hello` 表示运行成功。
 
----
+## 示例
 
-## 🧪 示例
+项目提供多个示例验证不同场景：
 
 | 分支 | 功能 | 说明 |
 | :--- | :--- | :--- |
-| `main` | 基础 HTTP 服务 | 返回 `Hello` |
+| `main` | 基础 HTTP 服务 | 返回 Hello |
 | `test/json-api` | JSON API 服务 | 根据 URL 路径返回不同 JSON |
 | `test/html-page` | 静态 HTML 页面 | 返回完整网页 |
 | `test/iot-control` | IoT 设备控制 | 通过 URL 控制虚拟设备状态 |
 | `test/echo-server` | 回声服务器 | 原样返回收到的请求 |
 
----
-
-## 🛠 技术栈
+## 技术栈
 
 `C++17` `Socket API` `select` `多线程` `内存池` `条件变量` `HTTP` `CMake` `跨平台` `ARM Linux`
 
----
-
-## 💻 平台支持
+## 平台支持
 
 - Windows (MinGW / MSYS2)
 - Linux (x86_64)
 - ARM Linux (树莓派、NanoPi，交叉编译或原生编译)
-```
