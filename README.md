@@ -1,3 +1,4 @@
+```markdown
 # lightweight_server
 
 ![C++](https://img.shields.io/badge/C%2B%2B-17-blue)
@@ -31,10 +32,21 @@
 
 ## 快速开始
 
-### 编译
+### 方式一：CMake（推荐）
 
 ```bash
-# Linux / ARM Linux
+mkdir build && cd build
+cmake ..
+make
+./http_server
+```
+
+### 方式二：手动 g++ 编译
+
+<details>
+<summary>🐧 Linux / ARM Linux</summary>
+
+```bash
 g++ -std=c++17 -I./include \
     ./src/mem_pool.cpp \
     ./src/thread_pool.cpp \
@@ -44,8 +56,13 @@ g++ -std=c++17 -I./include \
     ./src/acceptor.cpp \
     ./main.cpp \
     -o ./build/http_server -pthread
+```
+</details>
 
-# Windows (MinGW / MSYS2)
+<details>
+<summary>🪟 Windows (MinGW / MSYS2)</summary>
+
+```bash
 g++ -std=c++17 -I./include \
     ./src/mem_pool.cpp \
     ./src/thread_pool.cpp \
@@ -55,8 +72,10 @@ g++ -std=c++17 -I./include \
     ./src/acceptor.cpp \
     ./main.cpp \
     -o ./build/http_server -lws2_32
+```
+</details>
 
-浏览器访问 `http://localhost:8080`，看到 `Hello` 表示运行成功。
+启动后浏览器访问 `http://localhost:8080`，看到 `Hello` 表示运行成功。
 
 ## 示例
 
@@ -79,3 +98,4 @@ g++ -std=c++17 -I./include \
 - Windows (MinGW / MSYS2)
 - Linux (x86_64)
 - ARM Linux (树莓派、NanoPi，交叉编译或原生编译)
+```
