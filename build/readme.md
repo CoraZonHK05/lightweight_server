@@ -11,6 +11,16 @@
 
 ### 🔨 编译命令
 
+#### CMake（推荐）
+
+```bash
+mkdir build && cd build
+cmake ..
+make
+```
+
+#### 手动 g++
+
 <details>
 <summary>🪟 Windows</summary>
 
