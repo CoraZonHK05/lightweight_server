@@ -25,6 +25,8 @@ g++ -std=c++17 -I../include \
     ../main.cpp \
     -o http_server \
     -lws2_32
+</details><details>
+ <summary>🐧 Linux / ARM</summary>
 
 g++ -std=c++17 -I../include \
     ../src/mem_pool.cpp \
