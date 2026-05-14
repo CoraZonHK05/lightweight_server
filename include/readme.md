@@ -1,64 +1,37 @@
-## 🚀 Build Directory
+```markdown
+## 📁 Include Directory
 
-此目录存放编译后的可执行文件和相关构建产物。
+此目录存放项目的所有头文件（`.h`），定义各模块的接口与类型声明。
 
-### 📦 当前版本
+### 📦 模块一览
 
-| 平台 | 可执行文件 | 状态 |
+| 头文件 | 所属模块 | 功能描述 |
 | :--- | :--- | :--- |
-| Windows | `http_server.exe` | ✅ Ready |
-| Linux/ARM | `http_server` | ✅ Ready |
+| `mem_pool.h` | FixedMemPool | 固定大小内存分配器，空闲链表实现，O(1) 分配回收 |
+| `thread_pool.h` | ThreadPool | 固定线程数任务线程池，条件变量驱动，支持并发执行 |
+| `buffer.h` | Buffer | 读写缓冲区，自动扩容，支持 `\r\n` 行尾查找 |
+| `tcp_connection.h` | TcpConnection | TCP 连接封装，回调驱动，读写缓冲管理 |
+| `event_loop.h` | EventLoop | 事件循环引擎，基于 select 多路复用，支持可读可写事件分发 |
+| `acceptor.h` | Acceptor | 端口监听与连接接收，新连接回调通知 |
 
-### 🔨 编译命令
-
-<details>
-<summary>🪟 Windows</summary>
-
-```
-g++ -std=c++17 -I../include \
-    ../src/mem_pool.cpp \
-    ../src/thread_pool.cpp \
-    ../src/buffer.cpp \
-    ../src/tcp_connection.cpp \
-    ../src/event_loop.cpp \
-    ../src/acceptor.cpp \
-    ../main.cpp \
-    -o http_server \
-    -lws2_32
-```
-</details>
-
-<details>
-<summary>🐧 Linux / ARM</summary>
+### 📐 依赖关系
 
 ```
-g++ -std=c++17 -I../include \
-    ../src/mem_pool.cpp \
-    ../src/thread_pool.cpp \
-    ../src/buffer.cpp \
-    ../src/tcp_connection.cpp \
-    ../src/event_loop.cpp \
-    ../src/acceptor.cpp \
-    ../main.cpp \
-    -o http_server \
-    -pthread
-```
-</details>
-
-### 📂 目录结构
-
-```
-+ http_server          # 可执行文件（Linux/ARM）
-+ http_server.exe      # 可执行文件（Windows）
+mem_pool.h
+    ↓
+buffer.h ←── tcp_connection.h ←── event_loop.h ←── acceptor.h
+                                     ↑
+                               thread_pool.h
 ```
 
-### 🧹 清理
+### 📝 编码规范
 
-```
-# 删除所有编译产物
-rm -rf *
-```
+- 使用 `#pragma once` 防止重复包含
+- 类名采用 PascalCase（如 `TcpConnection`）
+- 成员变量命名后缀 `_`（如 `readPos_`、`fd_`）
+- 公开接口添加 `const` 修饰，保证只读不写
 
 ---
 
-> ⚠️ 此目录下的 `.exe` 和二进制文件**不会**被 Git 追踪（已配置 `.gitignore`）
+> 💡 头文件只做声明，实现细节在 `src/` 目录对应的 `.cpp` 文件中。
+```
