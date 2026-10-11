@@ -1,0 +1,103 @@
+#include "tcp_connection.h"
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#define close closesocket
+#else
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#endif
+
+#include <iostream>
+#include <cerrno>
+
+TcpConnection::TcpConnection(int fd)
+    : fd_(fd), readBuf_(1024), writeBuf_(1024) {}
+
+TcpConnection::~TcpConnection()
+{
+    if (fd_ >= 0)
+    {
+        close(fd_);
+    }
+}
+
+int TcpConnection::fd() const { return fd_; }
+
+void TcpConnection::setReadCallback(Callback cb)
+{
+    readCallback_ = std::move(cb);
+}
+
+void TcpConnection::handleRead()
+{
+    char buf[1024];
+    int n = ::recv(fd_, buf, sizeof(buf), 0);
+    if (n > 0)
+    {
+        readBuf_.append(buf, n);
+        const char *crlf = readBuf_.findCRLF();
+        if (crlf && readCallback_)
+        {
+            std::string line = readBuf_.retrieve(crlf - readBuf_.peek() + 2);
+            readCallback_(line);
+        }
+    }
+    else if (n == 0)
+    {
+        std::cout << "[TcpConnection] fd=" << fd_ << " closed by peer\n";
+        close(fd_);
+        fd_ = -1;
+    }
+    else
+    {
+#ifdef _WIN32
+        if (WSAGetLastError() == WSAEWOULDBLOCK)
+            return;
+#else
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return;
+#endif
+        std::cerr << "[TcpConnection] recv error on fd=" << fd_ << "\n";
+        close(fd_);
+        fd_ = -1;
+    }
+}
+
+void TcpConnection::handleWrite()
+{
+    if (writeBuf_.readableSize() == 0)
+        return;
+    int n = ::send(fd_, writeBuf_.peek(), writeBuf_.readableSize(), 0);
+    if (n > 0)
+    {
+        writeBuf_.retrieve(n);
+    }
+    else if (n == 0)
+    {
+        close(fd_);
+        fd_ = -1;
+    }
+    else
+    {
+#ifdef _WIN32
+        if (WSAGetLastError() == WSAEWOULDBLOCK)
+            return;
+#else
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return;
+#endif
+        std::cerr << "[TcpConnection] send error on fd=" << fd_ << "\n";
+        close(fd_);
+        fd_ = -1;
+    }
+}
+
+void TcpConnection::send(const std::string &msg)
+{
+    writeBuf_.append(msg);
+}
